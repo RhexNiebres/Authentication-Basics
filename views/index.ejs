@@ -1,14 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title></title>
-</head>
-<body>
-  <% if (locals.user) {%>
+  <head>
+    <meta charset="UTF-8" />
+    <title></title>
+  </head>
+  <body>        
+    <% if (locals.user) {%>
     <h1>WELCOME BACK <%= user.username %> 🎉</h1>
     <a href="/log-out">LOG OUT</a>
-  <% } else { %>
+    <h3>hello <%= user.firstname %></h3>
+
+    <form action="/add-text" method="POST">
+      <label for="postText">Add a Text:</label>
+      <textarea
+        id="postText"
+        name="postText"
+        rows="4"
+        cols="50"
+        placeholder="Write your text here..."
+        required
+      ></textarea>
+      <button type="submit">Submit Text</button>
+    </form>
+
+    <h2>Posts</h2>
+    <% if (posts && posts.length) { %>
+    <ul>
+      <% posts.forEach(function(post) { %>
+      <li>
+        <% if (user && user.membership === 'admin') {%>
+        <strong><%=post.username %></strong>
+        <% }else{ %>
+        <strong>Unknown</strong>
+        <%}%>
+      </li>
+      <%= post.text %>
+      <% }) %>
+    </ul>
+    <% } else { %>
+    <p>No posts yet.</p>
+
+
+    <% } %> <% } else { %>
     <h1>please log in</h1>
     <form action="/log-in" method="POST">
       <label for="username">Username</label>
@@ -17,6 +50,8 @@
       <input id="password" name="password" type="password" />
       <button>Log In</button>
     </form>
-  <%}%>
-</body>
+    <a href="/sign-up">Don't have an account? sign up here!</a>
+    <%}%>
+    <br />
+  </body>
 </html>
