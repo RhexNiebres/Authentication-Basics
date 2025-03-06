@@ -5,33 +5,43 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
-
+const pool = require("./db/pool");
 
 const app = express();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
-
+app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
 app.use(passport.session());
-app.use(express.urlencoded({ extended: false }));
+
 
 app.get("/", (req, res) => {
   res.render("index", { user: req.user });
 });
 
 app.get("/sign-up", (req, res) => res.render("sign-up-form"));
+
 app.post("/sign-up", async (req, res, next) => {
+    console.log("Received form data:", req.body); 
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
-      req.body.username,
-      hashedPassword
-    ]);
+    const role = req.body.membership === "admin" ? "admin" : "member"; // Default to "member"
+    await pool.query(
+      "INSERT INTO users (firstname, lastname, username, password, membership) VALUES ($1, $2,$3,$4,$5)",
+      [
+        req.body.firstname,
+        req.body.lastname,
+        req.body.username,
+        hashedPassword,
+        role,
+      ]
+    );
     res.redirect("/");
   } catch (err) {
     return next(err);
   }
 });
+
 //first function
 passport.use(
   new LocalStrategy(async (username, password, done) => {
