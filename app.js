@@ -15,11 +15,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
 app.use(passport.session());
 
+//index route
 app.get("/", async (req, res, next) => {
   try {
     // Query posts with associated username (joining posts and users)
     const postsResult = await pool.query(`
-      SELECT posts.text, users.username,users.membership 
+      SELECT posts.id, posts.text, users.username, users.membership 
       FROM posts 
       JOIN users ON posts.user_id = users.id
       ORDER BY posts.timestamp DESC
@@ -31,8 +32,8 @@ app.get("/", async (req, res, next) => {
   }
 });
 
+//sign up route
 app.get("/sign-up", (req, res) => res.render("sign-up-form"));
-
 app.post("/sign-up", async (req, res, next) => {
   console.log("Received form data:", req.body);
   try {
@@ -63,7 +64,7 @@ app.post("/sign-up", async (req, res, next) => {
     return next(err);
   }
 });
-
+//posts
 app.post("/add-text", async (req, res, next) => {
   if (!req.user) {
     return res.status(401).send("Unauthorized");
@@ -75,6 +76,33 @@ app.post("/add-text", async (req, res, next) => {
     );
     res.redirect("/");
   } catch (err) {
+    next(err);
+  }
+});
+
+//delete function for post
+app.post("/delete-post/:id", async (req, res, next) => {
+  if (!req.user || req.user.membership !== "admin") {
+    return res.status(403).send("Unauthorized");
+  }
+
+  console.log("Attempting to delete post with ID:", req.params.id); // Debugging step
+
+  try {
+    const post = await pool.query("SELECT * FROM posts WHERE id = $1", [
+      req.params.id,
+    ]);
+
+    if (post.rows.length === 0) {
+      console.log("Post not found!");
+      return res.status(404).send("Post not found");
+    }
+
+    await pool.query("DELETE FROM posts WHERE id = $1", [req.params.id]);
+    console.log("Post deleted successfully");
+    res.redirect("/");
+  } catch (err) {
+    console.error("Error deleting post:", err);
     next(err);
   }
 });
