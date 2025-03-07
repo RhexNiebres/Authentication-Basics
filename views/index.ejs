@@ -7,8 +7,9 @@
   <body>        
     <% if (locals.user) {%>
     <h1>WELCOME BACK <%= user.username %> 🎉</h1>
+    <a href="/become-member">become a member</a>
     <a href="/log-out">LOG OUT</a>
-    <h3>hello <%= user.firstname %></h3>
+    <h3>hello <%= user.firstname %><%= user.lastname %></h3>
 
     <form action="/add-text" method="POST">
       <label for="postText">Add a Text:</label>
@@ -26,17 +27,22 @@
     <h2>Posts</h2>
     <% if (posts && posts.length) { %>
     <ul>
-      <% posts.forEach(function(post) { %>
-      <li>
-        <% if (user && user.membership === 'admin') {%>
-        <strong><%=post.username %></strong>
-        <% }else{ %>
+  <% posts.forEach(function(post) { %>
+    <li>
+      <% if (user && user.membership === 'admin') { %>
+        <strong><%= post.username %></strong>
+        <form action="/delete-post/<%= post.id %>" method="POST" style="display:inline;">
+          <button type="submit">Delete</button>
+        </form>
+      <% } else { %>
         <strong>Unknown</strong>
-        <%}%>
-      </li>
-      <%= post.text %>
-      <% }) %>
-    </ul>
+      <% } %>
+
+      <p><%= post.text %></p>
+    </li>
+  <% }) %>
+</ul>
+
     <% } else { %>
     <p>No posts yet.</p>
 
