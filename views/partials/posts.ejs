@@ -1,0 +1,32 @@
+<form action="/add-text" method="POST">
+    <label for="postText">Add a Text:</label>
+    <textarea
+      id="postText"
+      name="postText"
+      rows="4"
+      cols="50"
+      placeholder="Write your text here..."
+      required
+    ></textarea>
+    <button type="submit">Submit Text</button>
+  </form>
+  
+  <h2>Posts</h2>
+  <% if (posts && posts.length) { %>
+    <ul>
+      <% posts.forEach(function(post) { %>
+        <li>
+          <strong><%= user && user.membership === 'admin' ? post.username : 'Unknown' %></strong>
+          <% if (user && user.membership === 'admin') { %>
+            <form action="/delete-post/<%= post.id %>" method="POST" style="display:inline;">
+              <button type="submit">Delete</button>
+            </form>
+          <% } %>
+          <p><%= post.text %></p>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>No posts yet.</p>
+  <% } %>
+  
