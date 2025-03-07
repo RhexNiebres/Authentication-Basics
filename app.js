@@ -107,6 +107,35 @@ app.post("/delete-post/:id", async (req, res, next) => {
   }
 });
 
+app.get("/become-member", (req, res) => {
+  res.render("memberForm");
+});
+
+//become a member route
+app.post("/become-member", async (req, res, next) => {
+  const password = req.body.password;
+  const secretPassword = process.env.MEMBER_SECRET; 
+  if (!req.user) {
+    return res.status(401).send("Unauthorized");
+  }
+
+  if (password === secretPassword) {
+    try {
+      await pool.query("UPDATE users SET membership = 'member' WHERE id = $1", [
+        req.user.id,
+      ]);
+      res.redirect("/");
+    } catch (err) {
+      next(err);
+    }
+  } else {
+    res.send(
+      `<script>alert("Wrong password"); window.location.href="/become-member";</script>`
+    );
+  }
+});
+
+
 //first function
 passport.use(
   new LocalStrategy(async (username, password, done) => {
